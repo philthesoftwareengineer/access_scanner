@@ -4,6 +4,7 @@ from wcag_zoo.validators.ayeaye import Ayeaye
 from wcag_zoo.validators.glowworm import Glowworm
 from wcag_zoo.validators.molerat import Molerat
 from wcag_zoo.validators.tarsier import Tarsier
+from .utils import save_accessibility_result
 
 def run_validator(ValidatorClass, html_content):
     """
@@ -39,8 +40,9 @@ def check_accessibility(response):
     # if response.status_code == 200 and 'text/html' in response.headers.get('Content-Type', ''):
         # html_content = response.text
 
-    html_content = response
+    html_content = response.text
     recommendations = []
+    url = response.url
 
     # WCAG Validators
     validators = [Anteater, Ayeaye, Glowworm, Molerat, Tarsier]
@@ -58,25 +60,26 @@ def check_accessibility(response):
 
             if failures:
                 recommendations.append(f"Failures ({len(failures)}):")
-                for failure in failures:
-                    if isinstance(failure, dict) and 'message' in failure:
-                        recommendations.append(f"  - {failure['message']}")
-                    else:
-                        recommendations.append(f"  - {failure}")
+                for guideline, techniques in failures.items():
+                    for technique, items in techniques.items():
+                        for failure in items:
+                            recommendations.append(f"  - {failure.get('message', 'No message available')}")
+                            save_accessibility_result(url, 'Failed', failure.get('message', 'No message available'))
 
             if warnings:
                 recommendations.append(f"Warnings ({len(warnings)}):")
-                for warning in warnings:
-                    if isinstance(warning, dict) and 'message' in warning:
-                        recommendations.append(f"  - {warning['message']}")
-                    else:
-                        recommendations.append(f"  - {warning}")
+                for guideline, techniques in warnings.items():
+                    for technique, items in techniques.items():
+                        for warning in items:
+                            recommendations.append(f"  - {warning.get('message', 'No message available')}")
+                            save_accessibility_result(url, 'Warning', warning.get('message', 'No message available'))
 
             if skipped:
                 recommendations.append(f"Skipped elements ({len(skipped)}):")
                 for skip in skipped:
                     if isinstance(skip, dict) and 'message' in skip:
                         recommendations.append(f"  - {skip['message']}")
+                        save_accessibility_result(url, 'Skipped', skip.get('message', 'No message available'))
                     else:
                         recommendations.append(f"  - {skip}")
     

@@ -13,7 +13,7 @@ def check_url(request):
             try:
                 response = requests.get(url)
                 if response.status_code == 200:
-                    results = run_access_scan(response.text)
+                    results = run_access_scan(response)
             except requests.exceptions.RequestException as err:
                 results = {'error': f"Could not fetch teh URL. Error: {err}"}
     else:
