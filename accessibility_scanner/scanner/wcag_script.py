@@ -1,4 +1,5 @@
 import requests
+import json
 from wcag_zoo.validators.anteater import Anteater
 from wcag_zoo.validators.ayeaye import Ayeaye
 from wcag_zoo.validators.glowworm import Glowworm
@@ -49,6 +50,8 @@ def check_accessibility(response):
 
     for ValidatorClass in validators:
         result = run_validator(ValidatorClass, html_content)
+        with open('data.json', 'a') as file:
+            json.dump(result, file, indent=4)
 
         failures = result.get('failures', [])
         warnings = result.get('warnings', [])

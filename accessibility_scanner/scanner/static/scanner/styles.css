@@ -1,0 +1,36 @@
+
+h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+p {
+    margin-top: 10px;
+}
+
+.dashboard-container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.tile {
+    padding: 20px;
+    border-radius: 10px;
+    color: white;
+    width: 250px;
+    text-align: center;
+}
+
+.failure-tile {
+    background-color: #e74c3c;
+}
+
+.warning-tile {
+    background-color: #f39c12;
+}
+
+.skipped-tile {
+    background-color: #3498db;
+}
+

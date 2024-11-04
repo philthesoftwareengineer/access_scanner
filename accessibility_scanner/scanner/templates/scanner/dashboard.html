@@ -1,0 +1,31 @@
+<!-- scanner/templates/scanner/dashboard.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accessibility Dashboard</title>
+    <link rel="stylesheet" href="{% static 'scanner/styles.css' %}">
+</head>
+<body>
+    <h1>Accessibility Dashboard for {{ url }}</h1>
+    <div class="dashboard-container">
+        <div class="tile failure-tile">
+            <h2>Failures</h2>
+            <p>Total: {{ failure_count }}</p>
+            <p>Example: {{ failure_example }}</p>
+        </div>
+        <div class="tile warning-tile">
+            <h2>Warnings</h2>
+            <p>Total: {{ warning_count }}</p>
+            <p>Example: {{ warning_example }}</p>
+        </div>
+        <div class="tile skipped-tile">
+            <h2>Skipped</h2>
+            <p>Total: {{ skipped_count }}</p>
+            <p>Example: {{ skipped_example }}</p>
+        </div>
+    </div>
+</body>
+</html>
