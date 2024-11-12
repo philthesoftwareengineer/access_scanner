@@ -6,6 +6,7 @@ from wcag_zoo.validators.glowworm import Glowworm
 from wcag_zoo.validators.molerat import Molerat
 from wcag_zoo.validators.tarsier import Tarsier
 from .utils import save_accessibility_result
+from datetime import datetime
 
 def run_validator(ValidatorClass, html_content):
     """
@@ -28,65 +29,54 @@ def run_validator(ValidatorClass, html_content):
 
 
 def check_accessibility(response):
-    """
-    Check the accessibility of a webpage using WCAG-zoo validators
-    
-    Args:
-        response: The response from a GET request
-
-    Returns:
-        list: A list of recommendations to improve accessibility
-    """
-    # Below if statement used when script was independant of web app
-    # if response.status_code == 200 and 'text/html' in response.headers.get('Content-Type', ''):
-        # html_content = response.text
-
     html_content = response.text
-    recommendations = []
     url = response.url
+    datetime_stamp = datetime.now().isoformat()
+
+    # Categorize results
+    all_results = {
+        'failures': [],
+        'warnings': [],
+        'skipped': []
+    }
 
     # WCAG Validators
     validators = [Anteater, Ayeaye, Glowworm, Molerat, Tarsier]
 
     for ValidatorClass in validators:
         result = run_validator(ValidatorClass, html_content)
-        with open('data.json', 'a') as file:
-            json.dump(result, file, indent=4)
-
-        failures = result.get('failures', [])
-        warnings = result.get('warnings', [])
-        skipped = result.get('skipped', [])
-
-        if failures or warnings:
-            validator_name = ValidatorClass.__name__
-            recommendations.append(f"--- {validator_name} ---")
-
-            if failures:
-                recommendations.append(f"Failures ({len(failures)}):")
-                for guideline, techniques in failures.items():
-                    for technique, items in techniques.items():
-                        for failure in items:
-                            recommendations.append(f"  - {failure.get('message', 'No message available')}")
-                            save_accessibility_result(url, 'Failed', failure.get('message', 'No message available'))
-
-            if warnings:
-                recommendations.append(f"Warnings ({len(warnings)}):")
-                for guideline, techniques in warnings.items():
-                    for technique, items in techniques.items():
-                        for warning in items:
-                            recommendations.append(f"  - {warning.get('message', 'No message available')}")
-                            save_accessibility_result(url, 'Warning', warning.get('message', 'No message available'))
-
-            if skipped:
-                recommendations.append(f"Skipped elements ({len(skipped)}):")
-                for skip in skipped:
-                    if isinstance(skip, dict) and 'message' in skip:
-                        recommendations.append(f"  - {skip['message']}")
-                        save_accessibility_result(url, 'Skipped', skip.get('message', 'No message available'))
-                    else:
-                        recommendations.append(f"  - {skip}")
+        
+        for section, content in result.items():
+            for guideline, items in content.items():
+                for technique, entries in items.items():
+                    for entry in entries:
+                        # Define the type of issue, e.g., based on some condition in `entry`
+                        issue_type = entry.get('issue_type', 'failures')  # Default to 'failures' if no type provided
+                        
+                        row = {
+                            'datetime': datetime_stamp,
+                            'url': url,
+                            'section_type': section,
+                            'guideline': entry.get('guideline'),
+                            'technique': entry.get('technique'),
+                            'message': entry.get('message'),
+                            'error_code': entry.get('error_code'),
+                            'xpath': entry.get('xpath'),
+                            'classes': entry.get('classes'),
+                            'id': entry.get('id')
+                        }
+                        
+                        # Append to appropriate category
+                        all_results[issue_type].append(row)
+    with open("sample.json", "w") as file:
+        json.dump(all_results, file)
+                        
+    save_accessibility_result(all_results, url)
     
-    return recommendations if recommendations else ["No accessibility issues found."]
+    return all_results if any(all_results.values()) else {"message": "No accessibility issues found."}
+
+
+
     # else:
     #     return ["Issue with response content."]
 
