@@ -23,7 +23,7 @@ def check_url(request):
                     results = run_access_scan(response)
                     save_accessibility_result(results, url)
             except requests.exceptions.RequestException as err:
-                results = {'error': f"Could not fetch teh URL. Error: {err}"}
+                results = {'error': f"Could not fetch the URL. Error: {err}"}
     else:
         form = UrlForm()
 
