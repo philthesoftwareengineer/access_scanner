@@ -4,6 +4,13 @@ from unittest.mock import patch, MagicMock
 from .models import AccessibilityResult
 import json
 import requests
+import unittest
+from unittest.mock import patch, MagicMock
+from datetime import datetime
+from .wcag_script import run_validator, check_accessibility
+
+#################################################
+# views.pt tests
 
 class ViewsTestCase(TestCase):
     
@@ -116,4 +123,113 @@ class ViewsTestCase(TestCase):
         self.assertEqual(response['Content-Type'], 'application/json')
         self.assertIn("Example failure", response.content.decode('utf-8'))
 
+###############################
+# wcag_script.py tests
+
+class AccessibilityTests(unittest.TestCase):
+
+    @patch('scanner.wcag_script.Anteater')
+    def test_run_validator_success(self, MockAnteater):
+        '''
+        Testing Anteater validator
+        '''
+        mock_validator_instance = MockAnteater.return_value
+        mock_validator_instance.validate_document.return_value = {
+            'failures': {
+                'guideline1': {
+                    'technique1': [
+                        {'message': 'Example failure', 'error_code': 'E1'}
+                    ]
+                }
+            }
+        }
+
+        html_content = "<html><body>Test</body></html>"
+        result = run_validator(MockAnteater, html_content)
+
+        self.assertIn('failures', result)
+        self.assertEqual(result['failures']['guideline1']['technique1'][0]['message'], 'Example failure')
+        mock_validator_instance.validate_document.assert_called_once()
+
+    @patch('scanner.wcag_script.requests.get')
+    @patch('scanner.wcag_script.save_accessibility_result')
+    @patch('scanner.wcag_script.run_validator')
+    def test_check_accessibility_with_issues(self, mock_run_validator, mock_save_accessibility_result, mock_requests_get):
+        '''
+        Creating a bad validator response and checking the function returns the expected result
+        '''
+        mock_response = MagicMock()
+        mock_response.text = "<html><body>Example content</body></html>"
+        mock_response.url = "http://example.com"
+
+        mock_requests_get.return_value = mock_response
+
+        mock_run_validator.return_value = {
+            'failures': {
+                'guideline1': {
+                    'technique1': [
+                        {'message': 'Failure message', 'error_code': 'F1', 'xpath': '//div'}
+                    ]
+                }
+            },
+            'warnings': {},
+            'skipped': {}
+        }
+
+        result = check_accessibility(mock_response)
+        #print(json.dumps(result, indent=2))
+
+
+        self.assertIn('failures', result)
+        self.assertEqual(len(result['failures']), 5)
+        self.assertEqual(result['failures'][0]['message'], 'Failure message')
+
+
+        mock_save_accessibility_result.assert_called_once_with(result, "http://example.com")
+
+    @patch('scanner.wcag_script.save_accessibility_result')
+    def test_check_accessibility_no_issues(self, mock_save_accessibility_result):
+        '''
+        Testing the validator when an empty response is returned
+        '''
+        mock_response = MagicMock()
+        mock_response.text = "<html><body>No issues here</body></html>"
+        mock_response.url = "http://example.com"
+
+        with patch('scanner.wcag_script.run_validator') as mock_run_validator:
+            mock_run_validator.return_value = {'failures': {}, 'warnings': {}, 'skipped': {}}
+
+            result = check_accessibility(mock_response)
+
+            self.assertEqual(result, {"message": "No accessibility issues found."})
+            mock_save_accessibility_result.assert_called_once_with({'failures': [], 'warnings': [], 'skipped': []}, "http://example.com")
+
+    def test_run_validator_empty_html(self):
+        '''
+        Testing an empty html response
+        '''
+        html_content = ""
+        with patch('scanner.wcag_script.Ayeaye') as MockAyeaye:
+            mock_validator_instance = MockAyeaye.return_value
+            mock_validator_instance.validate_document.return_value = {}
+
+            result = run_validator(MockAyeaye, html_content)
+
+
+            self.assertEqual(result, {})
+            mock_validator_instance.validate_document.assert_called_once_with(b"")
+
+    @patch('scanner.wcag_script.run_validator')
+    def test_check_accessibility_handles_wrong_format_results(self, mock_run_validator):
+        '''
+        Testing a wrong-format response
+        '''
+        mock_response = MagicMock()
+        mock_response.text = "<html><body>wrong format results</body></html>"
+        mock_response.url = "http://example.com"
+
+        mock_run_validator.return_value = {'failures': "This is not a dictionary"}
+
+        with self.assertRaises(AttributeError):
+            check_accessibility(mock_response)
 
