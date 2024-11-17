@@ -1,0 +1,13 @@
+{% extends 'scanner/check_url.html' %}
+
+{% block body %}
+<form method="POST" novalidate>
+    {% csrf_token %}
+    <h2>Login</h2>
+    {{form.as_p}}
+    <input type="submit" value="Login" />
+    <p>Want to register? <a href="{% url 'register' %}">Register Here!</a></p>
+</form>
+
+
+{% endblock body %}
