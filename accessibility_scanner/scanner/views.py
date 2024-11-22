@@ -27,6 +27,9 @@ def check_url(request):
                 if response.status_code == 200:
                     results = run_access_scan(response)
                     save_accessibility_result(results, url)
+                else:
+                    results = {'error': f"Error with request: {str(response.status_code)}"}
+                    save_accessibility_result(results, url)
             except requests.exceptions.RequestException as err:
                 results = {'error': f"Could not fetch the URL. Error: {err}"}
     else:
@@ -43,12 +46,27 @@ def dashboard(request):
         json_data = json.loads(recent_result.json_response)
 
         # Flatten all entries in 'failures' into a single list, regardless of section_type
+
         entries = json_data.get("failures", [])
+
 
         # Normalize the JSON data while ignoring the outer keys
         df = pd.json_normalize(entries, sep='_')
-
-        failures_df = df[df['section_type'] == 'failures']
+        try:
+            failures_df = df[df['section_type'] == 'failures']
+        except KeyError:
+            print("Caught the keyerror\n")
+            context = {
+                'url': recent_result.url if recent_result else 'No URL checked',
+                'failure_count': 0,
+                'warning_count': 0,
+                'skipped_count': 0,
+                'success_count': 0,
+                'failure_example': "N/A",
+                'warning_example': "N/A",
+                'skipped_example': "N/A",
+            }
+            return render(request, 'scanner/dashboard.html', context)        
         warnings_df = df[df['section_type'] == 'warnings']
         success_df = df[df['section_type'] == 'success']
         skipped_df = df[df['section_type'] == 'skipped']
