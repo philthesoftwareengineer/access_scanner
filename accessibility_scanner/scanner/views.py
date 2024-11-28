@@ -45,31 +45,35 @@ def dashboard(request):
     if recent_result:
         json_data = json.loads(recent_result.json_response)
 
-        # Flatten all entries in 'failures' into a single list, regardless of section_type
+        # # Flatten all entries in 'failures' into a single list, regardless of section_type
 
-        entries = json_data.get("failures", [])
+        # entries = json_data.get("failures", [])
 
 
         # Normalize the JSON data while ignoring the outer keys
-        df = pd.json_normalize(entries, sep='_')
-        try:
-            failures_df = df[df['section_type'] == 'failures']
-        except KeyError:
-            print("Caught the keyerror\n")
-            context = {
-                'url': recent_result.url if recent_result else 'No URL checked',
-                'failure_count': 0,
-                'warning_count': 0,
-                'skipped_count': 0,
-                'success_count': 0,
-                'failure_example': "N/A",
-                'warning_example': "N/A",
-                'skipped_example': "N/A",
-            }
-            return render(request, 'scanner/dashboard.html', context)        
-        warnings_df = df[df['section_type'] == 'warnings']
-        success_df = df[df['section_type'] == 'success']
-        skipped_df = df[df['section_type'] == 'skipped']
+        # df = pd.json_normalize(json_data, sep='_')
+        # try:
+        #     failures_df = df[df['section_type'] == 'failures']
+        # except KeyError:
+        #     print("Caught the keyerror\n")
+        #     context = {
+        #         'url': recent_result.url if recent_result else 'No URL checked',
+        #         'failure_count': 0,
+        #         'warning_count': 0,
+        #         'skipped_count': 0,
+        #         'success_count': 0,
+        #         'failure_example': "N/A",
+        #         'warning_example': "N/A",
+        #         'skipped_example': "N/A",
+        #     }
+        #     return render(request, 'scanner/dashboard.html', context)  
+        failures_df = pd.DataFrame(json_data['failures'])
+        warnings_df = pd.DataFrame(json_data['warnings'])
+        success_df = pd.DataFrame(json_data['success'])
+        skipped_df = pd.DataFrame(json_data['skipped'])      
+        # warnings_df = df[df['section_type'] == 'warnings']
+        # success_df = df[df['section_type'] == 'success']
+        # skipped_df = df[df['section_type'] == 'skipped']
 
         failures_count = len(failures_df)
         warnings_count = len(warnings_df)
@@ -106,6 +110,7 @@ def download_json(request):
         json_data = json.loads(recent_result.json_response)
 
         #formatted_json = json.dumps(json_data, indent=4)
+        
         response = HttpResponse(json.dumps(json_data, indent=4), content_type='application/json')
         response['Content-Disposition'] = 'attachment; filename="accessibility_results.json"'
 

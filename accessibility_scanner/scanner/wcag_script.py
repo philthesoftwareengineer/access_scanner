@@ -35,6 +35,7 @@ def check_accessibility(response):
 
     # Categorize results
     all_results = {
+        'success': [],
         'failures': [],
         'warnings': [],
         'skipped': []
@@ -51,7 +52,7 @@ def check_accessibility(response):
                 for technique, entries in items.items():
                     for entry in entries:
                         # Define the type of issue, e.g., based on some condition in `entry`
-                        issue_type = entry.get('issue_type', 'failures')  # Default to 'failures' if no type provided
+                        issue_type = section  # Default to 'failures' if no type provided
                         
                         row = {
                             'datetime': datetime_stamp,
