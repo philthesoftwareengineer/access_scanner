@@ -29,7 +29,7 @@ def run_validator(ValidatorClass, html_content):
 
 
 def check_accessibility(response):
-#    html_content = response.text
+    html_content = response.text
     # commented out lines below for testing example htmls
     # with open('bad_example.html', 'r', encoding='utf-8') as file:
     #     html_content = file.read()
