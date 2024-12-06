@@ -48,45 +48,32 @@ def dashboard(request):
     if recent_result:
         json_data = json.loads(recent_result.json_response)
 
-        # # Flatten all entries in 'failures' into a single list, regardless of section_type
-
-        # entries = json_data.get("failures", [])
-
-
-        # Normalize the JSON data while ignoring the outer keys
-        # df = pd.json_normalize(json_data, sep='_')
-        # try:
-        #     failures_df = df[df['section_type'] == 'failures']
-        # except KeyError:
-        #     print("Caught the keyerror\n")
-        #     context = {
-        #         'url': recent_result.url if recent_result else 'No URL checked',
-        #         'failure_count': 0,
-        #         'warning_count': 0,
-        #         'skipped_count': 0,
-        #         'success_count': 0,
-        #         'failure_example': "N/A",
-        #         'warning_example': "N/A",
-        #         'skipped_example': "N/A",
-        #     }
-        #     return render(request, 'scanner/dashboard.html', context)  
         failures_df = pd.DataFrame(json_data['failures'])
         warnings_df = pd.DataFrame(json_data['warnings'])
         success_df = pd.DataFrame(json_data['success'])
         skipped_df = pd.DataFrame(json_data['skipped'])      
-        # warnings_df = df[df['section_type'] == 'warnings']
-        # success_df = df[df['section_type'] == 'success']
-        # skipped_df = df[df['section_type'] == 'skipped']
 
         failures_count = len(failures_df)
         warnings_count = len(warnings_df)
         success_count = len(success_df)
         skipped_count = len(skipped_df)
 
-        failure_example = failures_df['message'].iloc[0] if failures_count > 0 else 'No failures recorded'
-        warning_example = warnings_df['message'].iloc[0] if warnings_count > 0 else 'No warnings recorded'
-        skipped_example = skipped_df['message'].iloc[0] if skipped_count > 0 else 'No skipped elements recorded'
-        success_example = success_df['message'].iloc[0] if success_count > 0 else 'No successful elements recorded'
+        #failure_example = failures_df['message'].iloc[0].split(' - ')[0] if failures_count > 0 else 'No failures recorded'
+        failure_example = (failures_df['message'].iloc[0].split(' - ')[0] 
+                   if failures_count > 0 and failures_df['message'].iloc[0] 
+                   else 'No failures recorded')
+        warning_example = (warnings_df['message'].iloc[0].split(' - ')[0] 
+                   if warnings_count > 0 and warnings_df['message'].iloc[0] 
+                   else 'No warnings recorded')
+        skipped_example = (skipped_df['message'].iloc[0].split(' - ')[0] 
+                   if skipped_count > 0 and skipped_df['message'].iloc[0] 
+                   else 'No skipped recorded')
+        success_example = (success_df['message'].iloc[0].split(' - ')[0] 
+                   if success_count > 0 and success_df['message'].iloc[0] 
+                   else 'No successful elements recorded')
+        #warning_example = warnings_df['message'].iloc[0].split(' - ')[0] if warnings_count > 0 else 'No warnings recorded'
+        #skipped_example = skipped_df['message'].iloc[0].split(' - ')[0] if skipped_count > 0 else 'No skipped elements recorded'
+        #success_example = success_df['message'].iloc[0].split(' - ')[0] if success_count > 0 else 'No successful elements recorded'
 
     else:
         failures_count = warnings_count = skipped_count = success_count = 0
