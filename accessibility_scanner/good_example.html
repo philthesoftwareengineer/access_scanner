@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCAG Compliant Example</title>
+    <style>
+        body {
+            background-color: #ffffff; /* High contrast background */
+            color: #000000; /* High contrast text */
+            font-size: 16px;
+            font-family: Arial, Helvetica, sans-serif; /* Sans-serif font for good readability */
+        }
+        .button {
+            background-color: #000000; /* Accessible button colour */
+            color: #ffffff; /* Button text contrast */
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+        }
+        .button:focus, .button:hover {
+            outline: 2px solid #0056b3; /* Focus indicator */
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Accessibility Demonstration</h1>
+
+    <!-- Image with alternative text -->
+    <img src="example.jpg" alt="A descriptive example image">
+
+    <!-- Properly labeled form elements -->
+    <form>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="Enter your email"><br><br>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password"><br><br>
+
+        <!-- Clear submit button purpose -->
+        <button type="submit" class="button">Submit</button>
+    </form>
+
+    <!-- Descriptive link text -->
+    <a href="#" title="Learn more about accessibility">Learn more about accessibility</a><br>
+    <a href="#" title="Read our accessibility guide">Read our accessibility guide</a>
+
+    <!-- Text with additional cues -->
+    <p><strong style="color: black;">This is important!</strong> Please take action.</p>
+    <p><strong style="color: green;">This is okay!</strong> Everything is proceeding as expected.</p>
+
+    <!-- Keyboard accessible clickable div -->
+    <button class="button" onclick="alert('Clicked!')" accesskey="c">Clickable Button</button>
+
+</body>
+</html>

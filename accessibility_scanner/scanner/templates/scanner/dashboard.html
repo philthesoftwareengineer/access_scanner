@@ -11,6 +11,11 @@
 <body>
     <h1>Accessibility Dashboard for {{ url }}</h1>
     <div class="dashboard-container">
+        <div class="tile success-tile">
+            <h2>Successes</h2>
+            <p>Total: {{ success_count }}</p>
+            <p>Successes are elements that have been checked and not triggered any validation issues</p>
+        </div>
         <div class="tile failure-tile">
             <h2>Failures</h2>
             <p>Total: {{ failure_count }}</p>

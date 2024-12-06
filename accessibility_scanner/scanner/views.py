@@ -23,7 +23,10 @@ def check_url(request):
             url = form.cleaned_data['url']
             # Send GET request and run scanning script
             try:
+
                 response = requests.get(url)
+                # with open("response.txt", "w") as file:
+                #     file.write(response.text)
                 if response.status_code == 200:
                     results = run_access_scan(response)
                     save_accessibility_result(results, url)
@@ -83,12 +86,14 @@ def dashboard(request):
         failure_example = failures_df['message'].iloc[0] if failures_count > 0 else 'No failures recorded'
         warning_example = warnings_df['message'].iloc[0] if warnings_count > 0 else 'No warnings recorded'
         skipped_example = skipped_df['message'].iloc[0] if skipped_count > 0 else 'No skipped elements recorded'
+        success_example = success_df['message'].iloc[0] if success_count > 0 else 'No successful elements recorded'
 
     else:
         failures_count = warnings_count = skipped_count = success_count = 0
         failure_example = "No failures recorded"
         warning_example = "No warnings recorded"
         skipped_example = "No skipped elements recorded"
+        success_example = "No successful elements recorded"
 
     context = {
         'url': recent_result.url if recent_result else 'No URL checked yet',
@@ -99,6 +104,7 @@ def dashboard(request):
         'failure_example': failure_example,
         'warning_example': warning_example,
         'skipped_example': skipped_example,
+        'success_example': success_example,
     }
 
     return render(request, 'scanner/dashboard.html', context)

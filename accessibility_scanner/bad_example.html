@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Non-WCAG Compliant Example</title>
+    <style>
+        body {
+            background-color: lightgray; /* Poor colour contrast */
+            color: white;
+            font-size: 14px;
+            font-family: "Georgia", serif;        }
+        .button {
+            background-color: blue;
+            color: blue; /* Invisible button text */
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Accessibility Issues Demonstration</h1>
+
+    <!-- No alternative text for the image -->
+    <img src="example.jpg">
+
+    <!-- Poorly labeled form elements -->
+    <form>
+        <label>Email</label> <!-- Missing "for" attribute -->
+        <input type="text" placeholder="Enter your email"><br><br>
+
+        <label>Password</label> <!-- Missing "for" attribute -->
+        <input type="password"><br><br>
+
+        <!-- Unclear submit button purpose -->
+        <button>Click</button>
+    </form>
+
+    <!-- Non-descriptive link text -->
+    <a href="#">Click here</a><br>
+    <a href="#">More info</a>
+
+    <!-- Text only conveyed via colour -->
+    <p style="color: red;">This is important!</p>
+    <p style="color: green;">This is okay!</p>
+
+    <!-- No keyboard focus management -->
+    <div onclick="alert('Clicked!')">Clickable Div</div>
+
+</body>
+</html>
