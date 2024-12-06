@@ -5,7 +5,7 @@ from wcag_zoo.validators.ayeaye import Ayeaye
 from wcag_zoo.validators.glowworm import Glowworm
 from wcag_zoo.validators.molerat import Molerat
 from wcag_zoo.validators.tarsier import Tarsier
-from .utils import save_accessibility_result
+#from .utils import save_accessibility_result
 from datetime import datetime
 
 def run_validator(ValidatorClass, html_content):
@@ -29,7 +29,10 @@ def run_validator(ValidatorClass, html_content):
 
 
 def check_accessibility(response):
-    html_content = response.text
+#    html_content = response.text
+    # commented out lines below for testing example htmls
+    # with open('bad_example.html', 'r', encoding='utf-8') as file:
+    #     html_content = file.read()
     url = response.url
     datetime_stamp = datetime.now().isoformat()
 
@@ -72,7 +75,7 @@ def check_accessibility(response):
     with open("sample.json", "w") as file:
         json.dump(all_results, file)
                         
-    save_accessibility_result(all_results, url)
+    #save_accessibility_result(all_results, url)
     
     return all_results if any(all_results.values()) else {"message": "No accessibility issues found."}
 
@@ -83,10 +86,11 @@ def check_accessibility(response):
 
 
 if __name__ == "__main__":
-    url = "http://127.0.0.1:8000/"
+    url = "https://www.bbc.com"
     
     response = requests.get(url)
     recommendations = check_accessibility(response)
 
-    for rec in recommendations:
-        print(rec)
+    # for rec in recommendations:
+    #     print(rec)
+    print(recommendations)
