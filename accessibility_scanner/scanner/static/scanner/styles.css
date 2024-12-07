@@ -4,6 +4,10 @@ h2 {
     font-size: 1.5rem;
 }
 
+h4 {
+    font-weight: normal;
+}
+
 /* p {
     margin-top: 10px;
 } */
@@ -12,6 +16,15 @@ h2 {
     display: flex;
     gap: 20px;
     justify-content: center;
+}
+
+.serif-result {
+    display: flex;
+    gap: 20px;
+    justify-content: left;
+    background-color: lightblue;
+    padding-left: 10px;
+    margin: 10px;
 }
 
 .tile {
@@ -67,6 +80,7 @@ p {
     text-align: justify;
     padding: 10px;
 }
+
 
 h1 {
     padding-left: 10px;

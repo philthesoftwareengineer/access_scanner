@@ -1,5 +1,6 @@
 import requests
 import json
+import re
 from wcag_zoo.validators.anteater import Anteater
 from wcag_zoo.validators.ayeaye import Ayeaye
 from wcag_zoo.validators.glowworm import Glowworm
@@ -27,6 +28,22 @@ def run_validator(ValidatorClass, html_content):
     result = validator.validate_document(html_content_bytes)
     return result
 
+def check_for_serif_fonts(content):
+    # with open(file_path, 'r', encoding='utf-8') as file:
+    #     content = file.read()
+    
+    serif_font_pattern = r"font-family:.*?\b([^;]*\bserif\b[^;]*)(?!sans-serif)"
+    matches = re.findall(serif_font_pattern, content, re.IGNORECASE)
+    
+    serif_fonts = [match.strip() for match in matches if 'sans-serif' not in match.lower()]
+    
+    if serif_fonts:
+        return "Serif font found in url."
+        # for font in serif_fonts:
+        #     print(f"- {font}\n")
+    else:
+        return "No serif fonts found in url."
+
 
 def check_accessibility(response):
     html_content = response.text
@@ -41,8 +58,11 @@ def check_accessibility(response):
         'success': [],
         'failures': [],
         'warnings': [],
-        'skipped': []
+        'skipped': [], 
+        'serif_font_check': [],
     }
+
+    all_results['serif_font_check'].append(check_for_serif_fonts(html_content))
 
     # WCAG Validators
     validators = [Anteater, Ayeaye, Glowworm, Molerat, Tarsier]

@@ -51,7 +51,8 @@ def dashboard(request):
         failures_df = pd.DataFrame(json_data['failures'])
         warnings_df = pd.DataFrame(json_data['warnings'])
         success_df = pd.DataFrame(json_data['success'])
-        skipped_df = pd.DataFrame(json_data['skipped'])      
+        skipped_df = pd.DataFrame(json_data['skipped']) 
+        serif_result = json_data['serif_font_check'][0]     
 
         failures_count = len(failures_df)
         warnings_count = len(warnings_df)
@@ -92,6 +93,7 @@ def dashboard(request):
         'warning_example': warning_example,
         'skipped_example': skipped_example,
         'success_example': success_example,
+        'serif_font_check': serif_result,
     }
 
     return render(request, 'scanner/dashboard.html', context)
