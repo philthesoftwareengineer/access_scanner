@@ -82,6 +82,7 @@ def dashboard(request):
         warning_example = "No warnings recorded"
         skipped_example = "No skipped elements recorded"
         success_example = "No successful elements recorded"
+        serif_result = "No result recorded"
 
     context = {
         'url': recent_result.url if recent_result else 'No URL checked yet',

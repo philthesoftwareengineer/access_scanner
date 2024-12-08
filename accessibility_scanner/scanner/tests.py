@@ -4,13 +4,15 @@ from unittest.mock import patch, MagicMock
 from .models import AccessibilityResult
 import json
 import requests
+import re
 import unittest
 from unittest.mock import patch, MagicMock
 from datetime import datetime
-from .wcag_script import run_validator, check_accessibility
+from .wcag_script import run_validator, check_accessibility, check_for_serif_fonts
+#from .utils import save_accessibility_result
 
 #################################################
-# views.pt tests
+# views.py tests
 
 class ViewsTestCase(TestCase):
     
@@ -19,7 +21,7 @@ class ViewsTestCase(TestCase):
 
     @patch('scanner.views.requests.get')
     @patch('scanner.views.run_access_scan')
-    @patch('scanner.views.save_accessibility_result')
+    @patch('scanner.wcag_script.save_accessibility_result')
     def test_check_url_success(self, mock_save_result, mock_run_scan, mock_requests_get):
         '''
         Creates a mock successful request and then checks the functionality of checking the
@@ -66,6 +68,7 @@ class ViewsTestCase(TestCase):
         self.assertEqual(response.context['skipped_count'], 0)
         self.assertEqual(response.context['success_count'], 0)
         self.assertEqual(response.context['failure_example'], 'No failures recorded')
+        self.assertEqual(response.context['serif_font_check'], "No result recorded")
 
     def test_dashboard_with_results(self):
         '''
@@ -78,7 +81,8 @@ class ViewsTestCase(TestCase):
                 "failures": [{"section_type": "failures", "message": "Example failure"}],
                 "warnings": [{"section_type": "warnings", "message": "Example warning"}],
                 "success": [{"section_type": "success", "message": "Example success"}],
-                "skipped": [{"section_type": "skipped", "message": "Example skipped"}]
+                "skipped": [{"section_type": "skipped", "message": "Example skipped"}],
+                "serif_font_check": ["No serif fonts found in url."]
             })
         )
 
@@ -87,12 +91,13 @@ class ViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'scanner/dashboard.html')
         self.assertEqual(response.context['failure_count'], 1)
-        self.assertEqual(response.context['warning_count'], 0)
-        self.assertEqual(response.context['skipped_count'], 0)
-        self.assertEqual(response.context['success_count'], 0)
+        self.assertEqual(response.context['warning_count'], 1)
+        self.assertEqual(response.context['skipped_count'], 1)
+        self.assertEqual(response.context['success_count'], 1)
         self.assertEqual(response.context['failure_example'], "Example failure")
-        self.assertEqual(response.context['warning_example'], "No warnings recorded")
-        self.assertEqual(response.context['skipped_example'], "No skipped elements recorded")
+        self.assertEqual(response.context['warning_example'], "Example warning")
+        self.assertEqual(response.context['skipped_example'], "Example skipped")
+        self.assertEqual(response.context['serif_font_check'], "No serif fonts found in url.")
 
     def test_download_json_no_results(self):
         '''
@@ -189,20 +194,41 @@ class AccessibilityTests(unittest.TestCase):
 
     @patch('scanner.wcag_script.save_accessibility_result')
     def test_check_accessibility_no_issues(self, mock_save_accessibility_result):
-        '''
-        Testing the validator when an empty response is returned
-        '''
+        """
+        Test the accessibility check when no issues are found in the response.
+        """
+        # Create a mock response with valid HTML content and a URL
         mock_response = MagicMock()
         mock_response.text = "<html><body>No issues here</body></html>"
         mock_response.url = "http://example.com"
 
+        # Mock run_validator to return empty results for all validators
         with patch('scanner.wcag_script.run_validator') as mock_run_validator:
-            mock_run_validator.return_value = {'failures': {}, 'warnings': {}, 'skipped': {}}
+            mock_run_validator.return_value = {
+                'success': {},
+                'failures': {},
+                'warnings': {},
+                'skipped': {}
+            }
 
+            # Call the function under test
             result = check_accessibility(mock_response)
 
-            self.assertEqual(result, {"message": "No accessibility issues found."})
-            mock_save_accessibility_result.assert_called_once_with({'failures': [], 'warnings': [], 'skipped': []}, "http://example.com")
+            # Define the expected result, including the serif_font_check key
+            expected_result = {
+                'success': [],
+                'failures': [],
+                'warnings': [],
+                'skipped': [],
+                'serif_font_check': ['No serif fonts found in url.']
+            }
+
+            # Assertions
+            self.assertEqual(result, expected_result)
+            mock_save_accessibility_result.assert_called_once_with(expected_result, "http://example.com")
+
+
+
 
     def test_run_validator_empty_html(self):
         '''
@@ -233,3 +259,58 @@ class AccessibilityTests(unittest.TestCase):
         with self.assertRaises(AttributeError):
             check_accessibility(mock_response)
 
+
+class CheckForSerifFontsTests(unittest.TestCase):
+
+    def test_check_for_serif_fonts_with_serif(self):
+        '''
+        Tests the function when serif fonts are present in the content.
+        '''
+        content = """
+        <html>
+            <style>
+                body { font-family: "Times New Roman", serif; }
+                p { font-family: Georgia, serif; }
+            </style>
+        </html>
+        """
+        result = check_for_serif_fonts(content)
+        self.assertEqual(result, "Serif font found in url.")
+
+    def test_check_for_serif_fonts_without_serif(self):
+        '''
+        Tests the function when no serif fonts are present in the content.
+        '''
+        content = """
+        <html>
+            <style>
+                body { font-family: Arial, sans-serif; }
+                p { font-family: Helvetica, sans-serif; }
+            </style>
+        </html>
+        """
+        result = check_for_serif_fonts(content)
+        self.assertEqual(result, "No serif fonts found in url.")
+
+    def test_check_for_serif_fonts_mixed_fonts(self):
+        '''
+        Tests the function when both serif and sans-serif fonts are present in the content.
+        '''
+        content = """
+        <html>
+            <style>
+                body { font-family: "Times New Roman", serif; }
+                p { font-family: Arial, sans-serif; }
+            </style>
+        </html>
+        """
+        result = check_for_serif_fonts(content)
+        self.assertEqual(result, "Serif font found in url.")
+
+    def test_check_for_serif_fonts_empty_content(self):
+        '''
+        Tests the function with empty content.
+        '''
+        content = ""
+        result = check_for_serif_fonts(content)
+        self.assertEqual(result, "No serif fonts found in url.")

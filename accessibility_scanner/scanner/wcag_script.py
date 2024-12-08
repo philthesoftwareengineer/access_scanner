@@ -6,7 +6,7 @@ from wcag_zoo.validators.ayeaye import Ayeaye
 from wcag_zoo.validators.glowworm import Glowworm
 from wcag_zoo.validators.molerat import Molerat
 from wcag_zoo.validators.tarsier import Tarsier
-#from .utils import save_accessibility_result
+from .utils import save_accessibility_result
 from datetime import datetime
 
 def run_validator(ValidatorClass, html_content):
@@ -95,7 +95,7 @@ def check_accessibility(response):
     with open("sample.json", "w") as file:
         json.dump(all_results, file)
                         
-    #save_accessibility_result(all_results, url)
+    save_accessibility_result(all_results, url)
     
     return all_results if any(all_results.values()) else {"message": "No accessibility issues found."}
 
