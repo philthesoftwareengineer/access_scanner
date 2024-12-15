@@ -68,7 +68,7 @@ def dashboard(request):
                    else 'No warnings recorded')
         skipped_example = (skipped_df['message'].iloc[0].split(' - ')[0] 
                    if skipped_count > 0 and skipped_df['message'].iloc[0] 
-                   else 'No skipped recorded')
+                   else 'Individual elements recorded for each skipped record')
         success_example = (success_df['message'].iloc[0].split(' - ')[0] 
                    if success_count > 0 and success_df['message'].iloc[0] 
                    else 'No successful elements recorded')
